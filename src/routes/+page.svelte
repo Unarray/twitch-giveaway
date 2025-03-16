@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { UsersTable } from "$lib/components/molecules/users-table";
   import { Button } from "$lib/components/ui/button";
-import { Input } from "$lib/components/ui/input";
+  import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-    import { ScrollArea } from "$lib/components/ui/scroll-area";
-    import { Separator } from "$lib/components/ui/separator";
+  import { ScrollArea } from "$lib/components/ui/scroll-area";
+  import { Separator } from "$lib/components/ui/separator";
   import { useLocalStorage } from "$lib/local-storage";
 
   const channelID = useLocalStorage("channel-id");
@@ -26,17 +27,11 @@ import { Input } from "$lib/components/ui/input";
     </div>
     <div class="flex flex-col gap-4 w-1/3">
       <Button>Start Giveaway</Button>
-      <ScrollArea class="h-72 w-48 rounded-md border" title="TAGS">
-        <div class="p-4">
-          <h4 class="mb-4 text-sm font-medium leading-none">Tags</h4>
-          {#each tags as tag, i (i)}
-            <div class="text-sm">
-              {tag}
-            </div>
-            <Separator class="my-2" />
-          {/each}
-        </div>
-      </ScrollArea>
+      <UsersTable data={[
+        { id: "bonsoir", name: "Bonsoir" },
+        { id: "m8_ptitom", name: "Ptitom" },
+        { id: "zeymo_", name: "Zeymo" },
+      ]} />
     </div>
   </div>
 </div>
