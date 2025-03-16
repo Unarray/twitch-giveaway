@@ -1,6 +1,27 @@
 <script lang="ts">
-	import '../app.css';
-	let { children } = $props();
+  import Moon from "@lucide/svelte/icons/moon";
+  import Sun from "@lucide/svelte/icons/sun";
+  import { Button } from "$lib/components/ui/button";
+  import { Toaster } from "$lib/components/ui/sonner";
+  import { toggleMode } from "mode-watcher";
+  import { ModeWatcher } from "mode-watcher";
+  import "../app.css";
+  const { children } = $props();
 </script>
 
+<Toaster />
+<ModeWatcher />
+
+<Button on:click={toggleMode} variant="outline" size="icon" class="fixed top-0 right-0 m-2">
+  <Sun
+    class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+  />
+  <Moon
+    class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+  />
+  <span class="sr-only">Toggle theme</span>
+</Button>
+
+<main class="mx-auto w-10/12">
 {@render children()}
+</main>
