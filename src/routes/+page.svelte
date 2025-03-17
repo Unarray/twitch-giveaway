@@ -9,17 +9,20 @@
   const global = useLocalStorage("global");
   const blacklistedUsers = useLocalStorage("blacklist-users");
   onMount(async () => {
-    console.log(global.value.channelID);
-
     const client = new Client({
       channels: [global.value.channelID],
     });
     await client.connect();
 
-    client.on("message", (_, user, message) => {
+    client.on("message", (_, user, message, self) => {
       if (user.username === undefined || user["display-name"] === undefined) {
         return;
       }
+
+      if (user.username === global.value.channelID) {
+        return;
+      }
+
       if (message !== global.value.keyword) {
         return;
       }
