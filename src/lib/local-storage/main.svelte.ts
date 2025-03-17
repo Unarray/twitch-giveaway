@@ -3,9 +3,18 @@ import { z } from "zod";
 
 // Define the schema for each localStorage item
 export const localStorageSchemas = {
-  "channel-id": z.string().default(""),
-  "enter-keyword": z.string().default("!giveaway"),
-  "blacklist-users": z.array(z.string()).default([]),
+  "global": z.object({
+    channelID: z.string().default(""),
+    keyword: z.string().default("!giveaway"),
+  }).default({}),
+  "giveaway": z.object({
+    enteringTime: z.number().default(60 * 2),
+    autoStart: z.boolean().default(false),
+  }).default({}),
+  "blacklist-users": z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+  })).default([]),
 } as const;
 
 export const useLocalStorage = <K extends keyof typeof localStorageSchemas>(key: K, initialValue: z.input<typeof localStorageSchemas[K]> = undefined) => {
@@ -17,12 +26,7 @@ export const useLocalStorage = <K extends keyof typeof localStorageSchemas>(key:
   });
 
   const save = () => {
-    if (value) {
-      localStorage.setItem(key, JSON.stringify(value));
-    }
-    else {
-      localStorage.removeItem(key);
-    }
+    localStorage.setItem(key, JSON.stringify(value));
   };
 
   return {
