@@ -19,9 +19,9 @@
     Subscribe,
     createRender,
   } from "svelte-headless-table";
-    import { addPagination, addSelectedRows, addSortBy, addTableFilter } from "svelte-headless-table/plugins";
-    import { toast } from "svelte-sonner";
-    import { get, type Writable } from "svelte/store";
+  import { addPagination, addSelectedRows, addSortBy, addTableFilter } from "svelte-headless-table/plugins";
+  import { toast } from "svelte-sonner";
+  import { get, type Writable } from "svelte/store";
 
   const { data }: { data: Writable<User[]> } = $props();
   let itemCount = $state(get(data).length);

@@ -15,6 +15,10 @@ export const localStorageSchemas = {
     id: z.string(),
     name: z.string(),
   })).default([]),
+  "participants": z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+  })).default([]),
 } as const;
 
 export const useLocalStorage = <K extends keyof typeof localStorageSchemas>(key: K, initialValue: z.input<typeof localStorageSchemas[K]> = undefined) => {
@@ -22,7 +26,13 @@ export const useLocalStorage = <K extends keyof typeof localStorageSchemas>(key:
 
   onMount(() => {
     const currentValue = localStorage.getItem(key);
-    if (currentValue) value = localStorageSchemas[key].parse(JSON.parse(currentValue));
+
+    if (currentValue !== null) {
+      value = localStorageSchemas[key].parse(JSON.parse(currentValue));
+    }
+    else {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
   });
 
   const save = () => {

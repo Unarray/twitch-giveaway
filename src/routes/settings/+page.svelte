@@ -11,7 +11,6 @@
   import { writable } from "svelte/store";
 
   const global = useLocalStorage("global");
-  global.value.
   const giveaway = useLocalStorage("giveaway");
   const formattedTime = $derived((() => {
     const minutes = Math.floor(giveaway.value.enteringTime / 60);

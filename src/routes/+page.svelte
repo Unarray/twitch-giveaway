@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Trash_2 from "@lucide/svelte/icons/trash-2";
   import X from "@lucide/svelte/icons/x";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
@@ -9,18 +10,19 @@
   import { fade } from "svelte/transition";
   import { Client } from "tmi.js";
 
-  const participants = $state<{ id: string; name: string }[]>([]);
+  const participants = useLocalStorage("participants");
   let lastParticipants = $state<{ id: string; name: string }[]>([]);
-  const global = useLocalStorage("global");
-  const blacklistedUsers = useLocalStorage("blacklist-users");
   let nameFilter = $state("");
   const sortedFilteredData = $derived((() => {
-    const sortedParticipant = participants.toSorted((a, b) => a.name.localeCompare(b.name));
+    const sortedParticipant = participants.value.toSorted((a, b) => a.name.localeCompare(b.name));
 
     if (nameFilter.trim() === "") return sortedParticipant;
 
     return sortedParticipant.filter((value) => value.name.toLowerCase().includes(nameFilter.toLowerCase()));
   })());
+  const global = useLocalStorage("global");
+  const giveaway = useLocalStorage("giveaway");
+  const blacklistedUsers = useLocalStorage("blacklist-users");
 
   onMount(async () => {
     const client = new Client({
@@ -28,12 +30,12 @@
     });
     await client.connect();
 
-    client.on("message", (_, user, message) => {
-      if (user.username === undefined || user["display-name"] === undefined) {
+    client.on("message", (_, { username: id, "display-name": name }, message) => {
+      if (id === undefined || name === undefined) {
         return;
       }
 
-      if (user.username === global.value.channelID) {
+      if (id === global.value.channelID) {
         return;
       }
 
@@ -41,26 +43,26 @@
         return;
       }
 
-      if (participants.values().find((v) => v.id === user.username) !== undefined) {
+      if (participants.value.find((v) => v.id === id) !== undefined) {
         return;
       }
 
-      if (blacklistedUsers.value.find((v) => v.id === user.username) !== undefined) {
+      if (blacklistedUsers.value.find((v) => v.id === id) !== undefined) {
         return;
       }
 
-      participants.push({
-        id: user.username,
-        name: user["display-name"],
-      });
+      participants.value = [...participants.value, {
+        id: id,
+        name: name,
+      }];
       lastParticipants.push({
-        id: user.username,
-        name: user["display-name"],
+        id: id,
+        name: name,
       });
 
       // Remove the participant after 10 seconds (10000 ms)
       setTimeout(() => {
-        lastParticipants = lastParticipants.filter((p) => p.id !== user.username);
+        lastParticipants = lastParticipants.filter((p) => p.id !== id);
       }, 10000);
     });
   });
@@ -78,19 +80,25 @@
         {/each}
       </div>
       <div class="flex justify-between items-center">
-        <Button class="w-full">Start animation</Button>
+        <Button disabled variant="outline" class="w-full">Start animation</Button>
       </div>
     </div>
     <div class="col-span-2 flex flex-col justify-between gap-4">
-      <div class="flex justify-between items-center gap-2">
-        <Input
-          class="w-full"
-          placeholder="Filter names..."
-          type="text"
-          bind:value={nameFilter}
-        />
-        <Button variant="outline" disabled={nameFilter === ""} on:click={() => { nameFilter = ""; }} >
-          <X class="h-4 w-4" />
+      <div class="flex justify-between items-center gap-6">
+        <div class="flex grow justify-between items-center gap-2">
+          <Input
+            class="w-full"
+            placeholder="Filter names..."
+            type="text"
+            bind:value={nameFilter}
+          />
+          <Button variant="outline" disabled={nameFilter === ""} on:click={() => { nameFilter = ""; }} >
+            <X class="h-4 w-4" />
+          </Button>
+        </div>
+        <Button class="flex justify-between items-center gap-2" variant="outline" disabled={participants.value.length < 1} on:click={() => { participants.value = []; }} >
+          <Trash_2 class="h-4 w-4" />
+          <span>clear</span>
         </Button>
       </div>
       <ScrollArea class="grow">
