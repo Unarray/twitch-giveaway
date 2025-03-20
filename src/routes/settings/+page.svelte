@@ -10,25 +10,25 @@
   import { onMount } from "svelte";
   import { writable } from "svelte/store";
 
-  const global = useLocalStorage("global");
-  const giveaway = useLocalStorage("giveaway");
-  const formattedTime = $derived((() => {
-    const minutes = Math.floor(giveaway.value.enteringTime / 60);
-    const seconds = giveaway.value.enteringTime - minutes * 60;
+  const [global, setGlobal] = useLocalStorage("global");
+  const [giveaway, setGiveaway] = useLocalStorage("giveaway");
+  const formattedTime = $derived.by(() => {
+    const minutes = Math.floor(giveaway().enteringTime / 60);
+    const seconds = giveaway().enteringTime - minutes * 60;
 
     return {
       minutes,
       seconds,
     };
-  })());
+  });
 
-  const blacklistedUsers = useLocalStorage("blacklist-users");
-  const blacklistUsersWritable = writable(blacklistedUsers.value);
+  const [blacklistedUsers, setBlacklistedUsers] = useLocalStorage("blacklist-users");
+  const blacklistUsersWritable = writable(blacklistedUsers());
 
   onMount(() => {
-    blacklistUsersWritable.set(blacklistedUsers.value);
+    blacklistUsersWritable.set(blacklistedUsers());
     blacklistUsersWritable.subscribe((users) => {
-      blacklistedUsers.value = users;
+      setBlacklistedUsers(users);
     });
   });
 </script>
@@ -43,11 +43,11 @@
       <Card.Content class="grid grid-cols-2 gap-4 w-full">
         <div class="flex flex-col gap-1.5">
           <Label for="channel">Channel</Label>
-          <Input type="text" id="channel" placeholder="channel" bind:value={() => global.value.channelID, (v) => { global.value = { ...global.value, channelID: v }; }} />
+          <Input type="text" id="channel" placeholder="channel" bind:value={() => global().channelID, (v) => { setGlobal({ ...global(), channelID: v }); }} />
         </div>
         <div class="flex flex-col gap-1.5">
           <Label for="keyword">Keyword</Label>
-          <Input type="text" id="keyword" placeholder="keyword" bind:value={() => global.value.keyword, (v) => { global.value = { ...global.value, keyword: v }; }} />
+          <Input type="text" id="keyword" placeholder="keyword" bind:value={() => global().keyword, (v) => { setGlobal({ ...global(), keyword: v }); }} />
         </div>
       </Card.Content>
     </Card.Root>
@@ -62,14 +62,14 @@
           <div class="flex gap-1.5 justify-between items-center">
             <Label for="timer-time">Entering time</Label>
             <span>{formattedTime.minutes} min {formattedTime.seconds} sec</span>
-            <Input class="w-20" type="number" bind:value={() => giveaway.value.enteringTime, (v) => { giveaway.value = { ...giveaway.value, enteringTime: v }; }} />
+            <Input class="w-20" type="number" bind:value={() => giveaway().enteringTime, (v) => { setGiveaway({ ...giveaway(), enteringTime: v }); }} />
           </div>
-          <Slider bind:value={ () => [giveaway.value.enteringTime], (v) => { giveaway.value = { ...giveaway.value, enteringTime: v[0] }; } } max={60 * 10} step={1} />
+          <Slider bind:value={ () => [giveaway().enteringTime], (v) => { setGiveaway({ ...giveaway(), enteringTime: v[0] }); } } max={60 * 10} step={1} />
         </div>
         <Separator />
         <div class="grid grid-flow-row grid-flow-col gap-4 w-full">
           <div class="flex items-center gap-2">
-            <Switch id="auto-start-animation" bind:checked={() => giveaway.value.autoStart, (v) => { giveaway.value = { ...giveaway.value, autoStart: v }; }}/>
+            <Switch id="auto-start-animation" bind:checked={() => giveaway().autoStart, (v) => { setGiveaway({ ...giveaway(), autoStart: v }); }}/>
             <Label for="auto-start-animation">Auto start animation</Label>
           </div>
         </div>

@@ -47,7 +47,6 @@
 	"dependencies": {
 		"@bluzzi/eslint-config": "^2.1.1",
 		"@lucide/svelte": "^0.482.0",
-		"@sveltejs/svelte-virtual-list": "^3.0.1",
 		"svelte-headless-table": "^0.18.3",
 		"tmi.js": "^1.8.5",
 		"zod": "^3.24.2"

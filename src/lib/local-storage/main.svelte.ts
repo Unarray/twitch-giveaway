@@ -35,17 +35,21 @@ export const useLocalStorage = <K extends keyof typeof localStorageSchemas>(key:
     }
   });
 
-  const save = () => {
-    localStorage.setItem(key, JSON.stringify(value));
-  };
-
-  return {
-    get value(): z.output<typeof localStorageSchemas[K]> {
+  return [
+    () => {
       return value;
     },
-    set value(v: z.input<typeof localStorageSchemas[K]>) {
+    (v: z.input<typeof localStorageSchemas[K]>) => {
       value = localStorageSchemas[key].parse(v);
-      save();
+      localStorage.setItem(key, JSON.stringify(value));
     },
-  };
+  ] as const;
+
+  // return [
+  //   () => value,
+  //   (v: z.input<typeof localStorageSchemas[K]>) => {
+  //     value = localStorageSchemas[key].parse(v);
+  //     save();
+  //   },
+  // ] as const;
 };
