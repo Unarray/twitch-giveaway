@@ -66,36 +66,36 @@
   };
 
   onMount(async () => {
-    // const interval = (ms: number) => setTimeout(() => {
-    //   const randomLength = Math.floor(Math.random() * 25) + 4;
-    //   const randomBytes = new Uint8Array(randomLength);
-    //   crypto.getRandomValues(randomBytes);
+    const interval = (ms: number) => setTimeout(() => {
+      const randomLength = Math.floor(Math.random() * 25) + 4;
+      const randomBytes = new Uint8Array(randomLength);
+      crypto.getRandomValues(randomBytes);
 
-    //   const name = Array.from(randomBytes)
-    //     .map((m) => (`0${m.toString(16)}`).slice(-2))
-    //     .join("");
+      const name = Array.from(randomBytes)
+        .map((m) => (`0${m.toString(16)}`).slice(-2))
+        .join("");
 
-    //   setParticipants([
-    //     ...participants(),
-    //     {
-    //       id: name.toLowerCase(),
-    //       name: name.toUpperCase(),
-    //     },
-    //   ]);
-    //   lastParticipants.push({
-    //     id: name.toLowerCase(),
-    //     name: name.toUpperCase(),
-    //   });
+      setParticipants([
+        ...participants(),
+        {
+          id: name.toLowerCase(),
+          name: name.toUpperCase(),
+        },
+      ]);
+      lastParticipants.push({
+        id: name.toLowerCase(),
+        name: name.toUpperCase(),
+      });
 
-    //   // Remove the participant after 10 seconds (10000 ms)
-    //   setTimeout(() => {
-    //     lastParticipants = lastParticipants.filter((p) => p.id !== name.toLowerCase());
-    //   }, 10000 * 5);
+      // Remove the participant after 10 seconds (10000 ms)
+      setTimeout(() => {
+        lastParticipants = lastParticipants.filter((p) => p.id !== name.toLowerCase());
+      }, 10000);
 
-    //   interval(1000 * (Math.random() * 2));
-    // }, ms);
-    // interval(1000 * (Math.random() * 5));
-    lastParticipants = participants();
+      interval(1000 * (Math.random() * 5));
+    }, ms);
+    interval(1000 * (Math.random() * 5));
+
     const client = new Client({
       channels: [global().channelID],
     });
