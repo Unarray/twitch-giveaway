@@ -1,4 +1,7 @@
 <script lang="ts">
+  import Lock from "@lucide/svelte/icons/lock";
+  import LockOpen from "@lucide/svelte/icons/lock-open";
+  import Play from "@lucide/svelte/icons/play";
   import Trash_2 from "@lucide/svelte/icons/trash-2";
   import X from "@lucide/svelte/icons/x";
   import { Badge } from "$lib/components/ui/badge";
@@ -44,12 +47,36 @@
   });
   let timerEnabled = $state(false);
   let isOpen = $state(false);
+  let totalSeconds = $state(0);
   let remainingSeconds = $state(0);
+  const percentDone = $derived.by(() => {
+    if (isOpen === false) return 0;
+    if (timerEnabled === false) return 100;
+
+    return 100 - remainingSeconds * 100 / totalSeconds;
+  });
+  const getColorByPercent = (percent: number) => {
+    const hue = ((1 - (percent / 100)) * 120).toString(10);
+    return {
+      forground: ["hsl(", hue, ",100%,50%)"].join(""),
+      background: ["hsl(", hue, ",80%,20%)"].join(""),
+    };
+  };
+  const progressBarColor = $derived.by(() => {
+    if (isOpen === false) return getColorByPercent(100);
+
+    if (timerEnabled === false) return getColorByPercent(0);
+
+    return getColorByPercent(percentDone);
+  });
   const onOpenGiveaway = () => {
     isOpen = true;
 
+    console.log(timerEnabled);
+
     if (timerEnabled === false) return;
 
+    totalSeconds = giveaway().enteringTime;
     remainingSeconds = giveaway().enteringTime;
 
     const interval = setInterval(() => {
@@ -75,17 +102,19 @@
         .map((m) => (`0${m.toString(16)}`).slice(-2))
         .join("");
 
-      setParticipants([
-        ...participants(),
-        {
+      if (isOpen === true) {
+        setParticipants([
+          ...participants(),
+          {
+            id: name.toLowerCase(),
+            name: name.toUpperCase(),
+          },
+        ]);
+        lastParticipants.push({
           id: name.toLowerCase(),
           name: name.toUpperCase(),
-        },
-      ]);
-      lastParticipants.push({
-        id: name.toLowerCase(),
-        name: name.toUpperCase(),
-      });
+        });
+      }
 
       // Remove the participant after 10 seconds (10000 ms)
       setTimeout(() => {
@@ -139,9 +168,43 @@
         <Card.Content class="flex flex-col justify-between gap-4">
           <div class="flex justify-between items-center">
             <Dialog.Root>
-              <Dialog.Trigger class={`w-full ${buttonVariants({ variant: "default" })}`}>
-                Open giveaway {remainingSeconds}
-              </Dialog.Trigger>
+              <div class="w-full flex gap-2">
+                <div class="flex flex-col grow">
+                  <div
+                    class="relative overflow-hidden rounded h-full flex justify-center items-center"
+                    style={`background: ${progressBarColor.background};`}
+                  >
+                  <div
+                    class="absolute h-full w-full transition-all"
+                    style={`
+                      transform: translateX(-${100 - percentDone}%);
+                      background: ${progressBarColor.forground};
+                    `}
+                  ></div>
+                    <Badge class="pointer-events-none z-10 text-sm flex gap-1">
+                      {#if isOpen}
+                        Giveaway open!
+                        {#if timerEnabled}
+                          <span class="justify-self-end"> ({remainingSeconds})</span>
+                        {/if}
+                      {:else}
+                        Giveaway close
+                      {/if}
+                    </Badge>
+                  </div>
+                </div>
+                {#if isOpen === false}
+                  <Dialog.Trigger class={`${buttonVariants({ variant: "ghost", size: "icon" })} flex justify-center items-center`}>
+                    <Lock />
+                  </Dialog.Trigger>
+                {:else}
+                  <Button variant="outline" size="icon" on:click={onCloseGiveaway}>
+                    <LockOpen />
+                  </Button>
+                {/if}
+              </div>
+
+              <!-- DIALOG CONTENT -->
               <Dialog.Content>
                 <Dialog.Header>
                   <Dialog.Title>Open giveaway</Dialog.Title>
@@ -170,7 +233,10 @@
             </Dialog.Root>
           </div>
           <div class="flex justify-between items-center">
-            <Button disabled variant="outline" class="w-full">Start animation</Button>
+            <Button disabled={isOpen === true || participants().length < 1} variant="outline" class="w-full flex justify-center items-center gap-2">
+              <Play class="h-5 w-5" />
+              <span>Start animation</span>
+            </Button>
           </div>
         </Card.Content>
       </Card.Root>
@@ -197,7 +263,7 @@
           <Card.Title>{participants().length} Participants</Card.Title>
         </Card.Header>
         <Card.Content class="h-full overflow-hidden">
-          <div class="h-full flex flex-col gap-4 overflow-hidden">
+          <div class="h-full flex flex-col gap-4">
             <div class="flex justify-between items-center gap-6">
               <div class="flex grow justify-between items-center gap-2">
                 <Input

@@ -1,12 +1,15 @@
 <script lang="ts">
+	import { cn } from "$lib/utils";
 	import { Progress as ProgressPrimitive } from "bits-ui";
-	import { cn } from "$lib/utils.js";
 
-	type $$Props = ProgressPrimitive.Props;
+	// Extend the base props to include `barProps`
+	type BaseProps = ProgressPrimitive.Props;
+	type ProgressComponentProps = BaseProps & { barProps?: Record<string, any> };
 
-	let className: $$Props["class"] = undefined;
-	export let max: $$Props["max"] = 100;
-	export let value: $$Props["value"] = undefined;
+	let className: ProgressComponentProps["class"];
+	export let max: ProgressComponentProps["max"] = 100;
+	export let value: ProgressComponentProps["value"];
+	export let barProps: ProgressComponentProps["barProps"] = {};
 	export { className as class };
 </script>
 
@@ -15,7 +18,8 @@
 	{...$$restProps}
 >
 	<div
-		class="bg-primary h-full w-full flex-1 transition-all"
-		style={`transform: translateX(-${100 - (100 * (value ?? 0)) / (max ?? 1)}%)`}
+		{...barProps}
+		class={cn("bg-primary h-full w-full flex-1 transition-all", barProps.class)}
+		style={`transform: translateX(-${100 - (100 * (value ?? 0)) / (max ?? 1)}%); ${barProps.style}`}
 	></div>
 </ProgressPrimitive.Root>
