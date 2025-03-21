@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ListX from "@lucide/svelte/icons/list-x";
   import Lock from "@lucide/svelte/icons/lock";
   import LockOpen from "@lucide/svelte/icons/lock-open";
   import Play from "@lucide/svelte/icons/play";
@@ -90,6 +91,16 @@
   };
   const onCloseGiveaway = () => {
     isOpen = false;
+  };
+
+  let selectedParticipant = $state<string[]>([]);
+  const toggleSelection = (id: string) => {
+    if (selectedParticipant.includes(id)) {
+      selectedParticipant = selectedParticipant.filter((s) => s !== id);
+    }
+    else {
+      selectedParticipant.push(id);
+    }
   };
 
   onMount(async () => {
@@ -264,8 +275,8 @@
         </Card.Header>
         <Card.Content class="h-full overflow-hidden">
           <div class="h-full flex flex-col gap-4">
-            <div class="flex justify-between items-center gap-6">
-              <div class="flex grow justify-between items-center gap-2">
+            <div class="flex justify-between items-center gap-16">
+              <div class="flex justify-between items-center w-2/4 gap-2">
                 <Input
                   class="w-full"
                   placeholder="Filter names..."
@@ -276,21 +287,37 @@
                   <X class="h-4 w-4" />
                 </Button>
               </div>
-              <Button class="flex justify-between items-center gap-2" variant="outline" disabled={participants().length < 1} on:click={() => {
-                setParticipants([]);
-                lastParticipants = [];
-              }} >
-                <Trash_2 class="h-4 w-4" />
-                <span>clear</span>
-              </Button>
+              <div class="flex justify-center items-center">
+                <Button class="flex justify-between items-center gap-2" variant="outline" disabled={participants().length < 1} on:click={() => {
+                  setParticipants([]);
+                  lastParticipants = [];
+                  selectedParticipant = [];
+                }} >
+                  <Trash_2 class="h-4 w-4" />
+                  <span>clear</span>
+                </Button>
+                <Button class="flex justify-between items-center gap-2" variant="outline" disabled={selectedParticipant.length < 1} on:click={() => {
+                  setParticipants(participants().filter((v) => selectedParticipant.includes(v.id) === false));
+                  selectedParticipant = [];
+                }} >
+                  <ListX class="h-4 w-4" />
+                  <span>{selectedParticipant.length}</span>
+                </Button>
+              </div>
             </div>
             <div class="grow overflow-hidden mask-fade">
               <ScrollArea orientation="vertical" class="h-full">
                 <div class="flex flex-wrap gap-1">
                   {#each sortedFilteredData as { id, name } (id)}
-                    <div transition:fade>
-                      <Badge variant="outline" class="w-fit break-normal">{name}</Badge>
-                    </div>
+                    <button
+                      transition:fade
+                      class="cursor-pointer"
+                      onclick={() => {
+                        toggleSelection(id);
+                      }}
+                    >
+                      <Badge variant={selectedParticipant.includes(id) ? "default" : "outline"} class="w-fit break-normal">{name}</Badge>
+                    </button>
                   {/each}
                 </div>
               </ScrollArea>
