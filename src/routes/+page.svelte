@@ -5,6 +5,7 @@
   import Play from "@lucide/svelte/icons/play";
   import Trash_2 from "@lucide/svelte/icons/trash-2";
   import X from "@lucide/svelte/icons/x";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Badge } from "$lib/components/ui/badge";
   import { Button, buttonVariants } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
@@ -287,22 +288,78 @@
                   <X class="h-4 w-4" />
                 </Button>
               </div>
-              <div class="flex justify-center items-center">
-                <Button class="flex justify-between items-center gap-2" variant="outline" disabled={participants().length < 1} on:click={() => {
-                  setParticipants([]);
-                  lastParticipants = [];
-                  selectedParticipant = [];
-                }} >
-                  <Trash_2 class="h-4 w-4" />
-                  <span>clear</span>
-                </Button>
-                <Button class="flex justify-between items-center gap-2" variant="outline" disabled={selectedParticipant.length < 1} on:click={() => {
-                  setParticipants(participants().filter((v) => selectedParticipant.includes(v.id) === false));
-                  selectedParticipant = [];
-                }} >
-                  <ListX class="h-4 w-4" />
-                  <span>{selectedParticipant.length}</span>
-                </Button>
+              <div class="flex justify-center items-center gap-2">
+                <AlertDialog.Root>
+                  <AlertDialog.Trigger class={`${buttonVariants({ variant: "outline" })} flex justify-between items-center gap-2`} disabled={participants().length < 1}>
+                      <Trash_2 class="h-4 w-4" />
+                      <span>clear</span>
+                  </AlertDialog.Trigger>
+                  <AlertDialog.Content>
+                    <AlertDialog.Header>
+                      <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+                      <AlertDialog.Description>
+                        This action cannot be undone. This will remove <strong>{participants().length}</strong> participants.
+                      </AlertDialog.Description>
+                    </AlertDialog.Header>
+                    <AlertDialog.Footer>
+                      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+                      <AlertDialog.Action
+                        class={`${buttonVariants({ variant: "destructive" })}`}
+                        on:click={() => {
+                          setParticipants([]);
+                          lastParticipants = [];
+                          selectedParticipant = [];
+                        }}
+                      >
+                        Continue
+                      </AlertDialog.Action>
+                    </AlertDialog.Footer>
+                  </AlertDialog.Content>
+                </AlertDialog.Root>
+                <AlertDialog.Root>
+                  <AlertDialog.Trigger class={`${buttonVariants({ variant: "outline" })} flex justify-between items-center gap-2`} disabled={selectedParticipant.length < 1}>
+                    <ListX class="h-4 w-4" />
+                    <span>{selectedParticipant.length}</span>
+                  </AlertDialog.Trigger>
+                  <AlertDialog.Content>
+                    <AlertDialog.Header>
+                      <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+                      <AlertDialog.Description>
+                        This action cannot be undone. This will remove <strong>{selectedParticipant.length} selected</strong> participants.
+                      </AlertDialog.Description>
+                    </AlertDialog.Header>
+                      <div class="max-h-96">
+                        <ScrollArea orientation="vertical" class="h-full">
+                          <div class="flex flex-wrap gap-1">
+                            {#each sortedFilteredData.filter((v) => selectedParticipant.includes(v.id)) as { id, name } (id)}
+                              <button
+                                transition:fade
+                                class="cursor-pointer"
+                                onclick={() => {
+                                  toggleSelection(id);
+                                }}
+                              >
+                                <Badge variant={selectedParticipant.includes(id) ? "default" : "outline"} class="w-fit break-normal">{name}</Badge>
+                              </button>
+                            {/each}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    <AlertDialog.Footer>
+                      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+                      <AlertDialog.Action
+                        class={`${buttonVariants({ variant: "destructive" })}`}
+                        on:click={() => {
+                          setParticipants(participants().filter((v) => selectedParticipant.includes(v.id) === false));
+                          selectedParticipant = [];
+                        }}
+                      >
+                        Continue
+                      </AlertDialog.Action>
+                    </AlertDialog.Footer>
+                  </AlertDialog.Content>
+                </AlertDialog.Root>
+
               </div>
             </div>
             <div class="grow overflow-hidden mask-fade">
